@@ -78,6 +78,33 @@ _countBinder.wrappedValue += 1
 
 All objects that have registered for change callbacks will be notified of the change in value.
 
+### `ValueBinding` PropertyWrapper
+
+`ValueBinding` is a property wrapper implementation for the `ValueBinder` type.
+Thanks to [Mx-Iris](https://github.com/Mx-Iris) for sharing their implementation. 
+
+#### Example
+
+```swift
+@ValueBinding var countValue = 0
+
+// Register a block for updates
+$countValue.register { newValue in 
+   Swift.print("countValue is now \(newValue)")
+}
+
+countValue = 4  // triggers the update callback
+// prints "countValue is now 4"
+
+// Register for combine updates
+$countValue.publisher?.publisher
+   .receive(on: DispatchQueue.global(qos: .background))
+   .sink { newValue in
+      // Do something with 'newValue'
+   }
+   .store(in: &subscribers)
+```
+
 ## KeyPathBinder
 
 A `KeyPathBinder` is a specialization of the `ValueBinder` that can track a dynamic keypath
@@ -124,7 +151,7 @@ let cancellable = binder.publisher?.sink { newValue in
 ```
 MIT License
 
-Copyright (c) 2022 Darren Ford
+Copyright (c) 2023 Darren Ford
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 and associated documentation files (the "Software"), to deal in the Software without

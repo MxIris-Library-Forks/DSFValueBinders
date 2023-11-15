@@ -1,7 +1,7 @@
 //
 //  ValueBinder.swift
 //
-//  Copyright © 2022 Darren Ford. All rights reserved.
+//  Copyright © 2023 Darren Ford. All rights reserved.
 //
 //  MIT license
 //
@@ -113,6 +113,15 @@ public class ValueBinder<ValueType: Any> {
 	private var bindings = [Binding]()
 	// A string representation of the object (used for logging)
 	private lazy var selfTypeString = "\(type(of: self))"
+}
+
+// MARK: - Constant defs
+
+public extension ValueBinder {
+	/// A convenience for creating a ValueBinder with a value
+	static func constant(_ value: ValueType) -> ValueBinder<ValueType> {
+		ValueBinder(value)
+	}
 }
 
 // MARK: - Register/Deregister

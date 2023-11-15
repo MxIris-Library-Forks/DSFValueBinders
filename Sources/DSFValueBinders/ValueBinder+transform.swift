@@ -35,53 +35,8 @@ public extension ValueBinder {
 		let newBinder = ValueBinder<NEWBINDERTYPE>(initialValue)
 
 		self.register { newValue in
-			// guard let `self` = self else { return }
 			newBinder.wrappedValue = block(newValue)
 		}
 		return newBinder
-	}
-}
-
-// MARK: - Transform examples
-
-public extension ValueBinder where ValueType == Bool {
-	/// Returns a value binder which returns a toggled version of this valuebinder's wrapped bool value
-	func toggled() -> ValueBinder<Bool> {
-		self.transform { !$0 }
-	}
-}
-
-public extension ValueBinder where ValueType: ExpressibleByIntegerLiteral {
-	/// A basic Int/Double etc. to String conversion
-	func stringValue() -> ValueBinder<String> {
-		self.transform { "\($0)" }
-	}
-}
-
-public extension ValueBinder where ValueType == Double {
-	/// Get an integer represetation of the double value
-	func intValue(rule: FloatingPointRoundingRule = .towardZero) -> ValueBinder<Int> {
-		self.transform { Int($0.rounded(rule)) }
-	}
-}
-
-public extension ValueBinder where ValueType == Float {
-	/// Get an integer represetation of the float value
-	func intValue(rule: FloatingPointRoundingRule = .towardZero) -> ValueBinder<Int> {
-		self.transform { Int($0.rounded(rule)) }
-	}
-}
-
-public extension ValueBinder where ValueType == Int {
-	/// A simple transformer that returns a ValueBinder that presents the words representation for an int
-	func asWords(locale: Locale? = nil) -> ValueBinder<String> {
-		self.transform { newValue in
-			let nf = NumberFormatter()
-			nf.numberStyle = .spellOut
-			if let locale = locale {
-				nf.locale = locale
-			}
-			return nf.string(from: NSNumber(value: newValue)) ?? ""
-		}
 	}
 }

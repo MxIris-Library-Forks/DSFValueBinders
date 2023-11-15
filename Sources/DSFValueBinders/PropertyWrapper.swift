@@ -1,5 +1,5 @@
 //
-//  ValueBinder+Binding.swift
+//  PropertyWrapper.swift
 //
 //  Copyright © 2023 Darren Ford. All rights reserved.
 //
@@ -21,42 +21,23 @@
 
 import Foundation
 
-// MARK: - Value Binding
+/// A propertywrapper implementation for `ValueBinder`
+///
+/// Implementation by [Mx-Iris](https://github.com/dagronf/DSFValueBinders/pull/2)
+@propertyWrapper
+public struct ValueBinding<ValueType> {
+	private let valueBinder: ValueBinder<ValueType>
 
-extension ValueBinder {
-	// A binding object that stores an object and a callback for a valuebinder
-	class Binding {
-		// Is the registering object still alive?
-		@inline(__always) var isAlive: Bool { return object != nil }
+	public var wrappedValue: ValueType {
+		set { self.valueBinder.wrappedValue = newValue }
+		get { self.valueBinder.wrappedValue }
+	}
 
-		// A weakly held registration object to keep track of the lifetimes of the change block
-		weak var object: AnyObject?
+	public init(wrappedValue: ValueType) {
+		self.valueBinder = .init(wrappedValue)
+	}
 
-		// Callback for when the value changes
-		private var changeBlock: ((ValueType) -> Void)?
-
-		// Create a binding
-		init(_ object: AnyObject, _ changeBlock: @escaping (ValueType) -> Void) {
-			self.object = object
-			self.changeBlock = changeBlock
-		}
-
-		// Deregister this binder to stop it receiving change notifications
-		func deregister() {
-			self.object = nil
-			self.changeBlock = nil
-		}
-
-		// Called when the wrapped value changes. Propagate the new value through the changeblock
-		func didChange(_ value: ValueType) -> Bool {
-			if object != nil, let callback = changeBlock {
-				callback(value)
-				return true
-			}
-			else {
-				self.deregister()
-				return false
-			}
-		}
+	public var projectedValue: ValueBinder<ValueType> {
+		self.valueBinder
 	}
 }

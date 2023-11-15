@@ -1,5 +1,5 @@
 //
-//  ValueBinder+Binding.swift
+//  Utils.swift
 //
 //  Copyright © 2023 Darren Ford. All rights reserved.
 //
@@ -21,42 +21,41 @@
 
 import Foundation
 
-// MARK: - Value Binding
+extension NumberFormatter {
+	convenience init(_ initializerBlock: (NumberFormatter) -> Void) {
+		self.init()
+		initializerBlock(self)
+	}
+}
 
-extension ValueBinder {
-	// A binding object that stores an object and a callback for a valuebinder
-	class Binding {
-		// Is the registering object still alive?
-		@inline(__always) var isAlive: Bool { return object != nil }
+class MemoryDisposeBag {
+	func add(_ obj: AnyObject?) {
+		self.elements.append(Item(obj))
+	}
 
-		// A weakly held registration object to keep track of the lifetimes of the change block
-		weak var object: AnyObject?
-
-		// Callback for when the value changes
-		private var changeBlock: ((ValueType) -> Void)?
-
-		// Create a binding
-		init(_ object: AnyObject, _ changeBlock: @escaping (ValueType) -> Void) {
-			self.object = object
-			self.changeBlock = changeBlock
-		}
-
-		// Deregister this binder to stop it receiving change notifications
-		func deregister() {
-			self.object = nil
-			self.changeBlock = nil
-		}
-
-		// Called when the wrapped value changes. Propagate the new value through the changeblock
-		func didChange(_ value: ValueType) -> Bool {
-			if object != nil, let callback = changeBlock {
-				callback(value)
-				return true
-			}
-			else {
-				self.deregister()
-				return false
-			}
+	func add(_ obj: AnyObject?...) {
+		obj.forEach {
+			self.elements.append(Item($0))
 		}
 	}
+
+	func isEmpty() -> Bool {
+		self.clean()
+		return self.elements.filter { $0.weakObject != nil }.isEmpty
+	}
+
+	func clean() {
+		self.elements = self.elements.filter { $0.weakObject != nil }
+	}
+
+	//
+
+	private class Item {
+		weak var weakObject: AnyObject?
+		init(_ obj: AnyObject?) {
+			self.weakObject = obj
+		}
+	}
+
+	private var elements: [Item] = []
 }
